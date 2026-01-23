@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024-2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2024-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -154,8 +154,10 @@ async def test_memmachine_memory_client_project_creation_failure(
 
 async def test_memmachine_memory_client_config_validation():
     """Test that MemMachineMemoryClientConfig validates required fields."""
+    from pydantic import ValidationError
+    
     # base_url is required
-    with pytest.raises(Exception):  # Pydantic validation error
+    with pytest.raises(ValidationError):
         MemMachineMemoryClientConfig()
     
     # Should work with base_url

@@ -1,4 +1,20 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import asyncio
+import logging
 from typing import Any
 
 import requests
@@ -6,6 +22,8 @@ from memmachine.common.api import MemoryType
 
 from nat.memory.interfaces import MemoryEditor
 from nat.memory.models import MemoryItem
+
+logger = logging.getLogger(__name__)
 
 
 class MemMachineEditor(MemoryEditor):
@@ -182,14 +200,19 @@ class MemMachineEditor(MemoryEditor):
                     # Convert list to comma-separated string
                     metadata["tags"] = ", ".join(tags) if isinstance(tags, list) else str(tags)
                 
-                def add_memory():
+                def add_memory(
+                    content=memory_text,
+                    mem=memory,
+                    meta=metadata,
+                    mem_types=memory_types
+                ):
                     # Use MemMachine SDK add() method
                     # API: memory.add(content, role="user", metadata={}, memory_types=[...])
-                    memory.add(
-                        content=memory_text,
+                    mem.add(
+                        content=content,
                         role="user",
-                        metadata=metadata if metadata else None,
-                        memory_types=memory_types,
+                        metadata=meta if meta else None,
+                        memory_types=mem_types,
                         episode_type=None  # Use default (MESSAGE)
                     )
                 
@@ -300,8 +323,12 @@ class MemMachineEditor(MemoryEditor):
             # Sort episodes by created_at timestamp if available
             try:
                 conv_episodes.sort(key=lambda e: e.get("created_at") or e.get("timestamp") or "")
-            except:
-                pass
+            except (TypeError, AttributeError, ValueError) as e:
+                # Skip sorting if timestamps are missing or incompatible
+                logger.warning(
+                    f"Failed to sort episodes for conversation '{conv_key}': {e}. "
+                    "Continuing without sorting."
+                )
             
             # Extract conversation messages
             conversation_messages = []
@@ -475,7 +502,7 @@ class MemMachineEditor(MemoryEditor):
             group_id = kwargs.pop("group_id", "default")
             project_id = kwargs.pop("project_id", None)
             org_id = kwargs.pop("org_id", None)
-            delete_semantic = kwargs.pop("delete_semantic_memory", False)
+            # Note: delete_semantic_memory flag is not yet implemented for bulk deletion
 
             # Note: MemMachine SDK doesn't have a delete_all method
             # We would need to search for all memories and delete them individually

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024-2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2024-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,10 +19,8 @@ Integration tests for MemMachine memory integration.
 These tests require a running MemMachine server. They test the full
 integration by adding memories and then retrieving them.
 
-To run these tests:
-1. Start MemMachine server (and databases)
-2. Set MEMMACHINE_BASE_URL environment variable (defaults to http://localhost:8080)
-3. Run: pytest tests/test_memmachine_integration.py -v
+The tests will automatically skip if the MemMachine server is not available.
+Set `MEMMACHINE_BASE_URL` environment variable to override default (http://localhost:8080).
 """
 
 import os
@@ -36,10 +34,35 @@ from nat.memory.models import MemoryItem
 from nat.plugins.memmachine.memory import MemMachineMemoryClientConfig
 
 
-@pytest.fixture(name="memmachine_base_url")
-def memmachine_base_url_fixture():
-    """Get MemMachine base URL from environment or use default."""
-    return os.environ.get("MEMMACHINE_BASE_URL", "http://localhost:8080")
+@pytest.fixture(name="memmachine_base_url", scope="session")
+def memmachine_base_url_fixture(fail_missing: bool = False) -> str:
+    """
+    Ensure MemMachine server is running and provide base URL.
+    
+    To run these tests, a MemMachine server must be running.
+    Set MEMMACHINE_BASE_URL environment variable to override default (http://localhost:8080).
+    """
+    base_url = os.getenv("MEMMACHINE_BASE_URL", "http://localhost:8080")
+    if not base_url.startswith("http"):
+        base_url = f"http://{base_url}"
+    
+    try:
+        # Try to import and use MemMachineClient to check server availability
+        from memmachine import MemMachineClient
+        
+        client = MemMachineClient(base_url=base_url, timeout=5.0)
+        client.health_check(timeout=5.0)
+        return base_url
+    except ImportError:
+        reason = "memmachine package not installed. Install with: pip install memmachine"
+        if fail_missing:
+            raise RuntimeError(reason) from None
+        pytest.skip(reason=reason)
+    except Exception:
+        reason = f"Unable to connect to MemMachine server at {base_url}. Please ensure the server is running."
+        if fail_missing:
+            raise RuntimeError(reason) from None
+        pytest.skip(reason=reason)
 
 
 @pytest.fixture(name="test_config")
@@ -170,7 +193,7 @@ async def test_add_and_retrieve_direct_memory(
         
         # Try searching multiple times with retries (memory ingestion is async)
         retrieved_memories = []
-        for attempt in range(3):
+        for _attempt in range(3):
             retrieved_memories = await memory_client.search(
                 query="morning work allergy peanuts",
                 top_k=10,
@@ -400,7 +423,7 @@ async def test_conversation_and_direct_memory_both_retrievable(
         
         # Search for direct memory (with retries due to async processing)
         direct_results = []
-        for attempt in range(3):
+        for _attempt in range(3):
             direct_results = await memory_client.search(
                 query="San Francisco software engineer",
                 top_k=10,

@@ -29,6 +29,7 @@ dependencies = [
   "nvidia-nat-llama-index",
   "nvidia-nat-mcp",
   "nvidia-nat-mem0ai",
+  "nvidia-nat-memmachine",
   "nvidia-nat-mysql",
   "nvidia-nat-nemo-customizer",
   # nvidia-nat-openpipe-art cannot be part of all due to conflicts with nvidia-nat-crewai

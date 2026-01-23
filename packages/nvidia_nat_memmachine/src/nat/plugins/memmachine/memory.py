@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024-2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2024-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+from collections.abc import AsyncGenerator
+
 from nat.builder.builder import Builder
 from nat.cli.register_workflow import register_memory
 from nat.data_models.memory import MemoryBaseConfig
 from nat.data_models.retry_mixin import RetryMixin
+from nat.memory.interfaces import MemoryEditor
 from nat.utils.exception_handlers.automatic_retries import patch_with_retry
+
+logger = logging.getLogger(__name__)
 
 
 class MemMachineMemoryClientConfig(MemoryBaseConfig, RetryMixin, name="memmachine_memory"):
@@ -39,7 +45,10 @@ class MemMachineMemoryClientConfig(MemoryBaseConfig, RetryMixin, name="memmachin
 
 
 @register_memory(config_type=MemMachineMemoryClientConfig)
-async def memmachine_memory_client(config: MemMachineMemoryClientConfig, builder: Builder):
+async def memmachine_memory_client(
+    config: MemMachineMemoryClientConfig,
+    builder: Builder,  # Required by @register_memory contract, unused here
+) -> AsyncGenerator[MemoryEditor, None]:
     from .memmachine_editor import MemMachineEditor
     # Import and initialize the MemMachine Python SDK
     try:
@@ -82,19 +91,24 @@ async def memmachine_memory_client(config: MemMachineMemoryClientConfig, builder
                 description=f"NeMo Agent toolkit project: {config.project_id}"
             )
             memmachine_instance = project
-        except Exception as e:
+        except Exception:
             # If project creation fails, fall back to using the client directly
             # The editor will handle project creation on-demand
-            pass
+            logger.warning(
+                "Failed to create/get project '%s' in org '%s', falling back to client-level access",
+                config.project_id,
+                config.org_id,
+                exc_info=True,
+            )
 
     memory_editor = MemMachineEditor(memmachine_instance=memmachine_instance)
 
-    if isinstance(config, RetryMixin):
-        memory_editor = patch_with_retry(
-            memory_editor,
-            retries=config.num_retries,
-            retry_codes=config.retry_on_status_codes,
-            retry_on_messages=config.retry_on_errors
-        )
+    # Apply retry wrapper (config always inherits from RetryMixin)
+    memory_editor = patch_with_retry(
+        memory_editor,
+        retries=config.num_retries,
+        retry_codes=config.retry_on_status_codes,
+        retry_on_messages=config.retry_on_errors
+    )
 
     yield memory_editor

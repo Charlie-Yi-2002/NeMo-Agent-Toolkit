@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024-2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2024-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +47,7 @@ class APICallSpy:
             'kwargs': kwargs
         })
     
-    def get_calls(self, method_name: str = None):
+    def get_calls(self, method_name: str | None = None):
         """Get all calls, optionally filtered by method name."""
         if method_name:
             return [c for c in self.calls if c['method'] == method_name]
@@ -363,7 +363,7 @@ class TestSearchAPICalls:
             "episode_summary": []
         }
         
-        results = await editor_with_spy.search(
+        await editor_with_spy.search(
             query="What do I like?",
             top_k=10,
             user_id="user123",
