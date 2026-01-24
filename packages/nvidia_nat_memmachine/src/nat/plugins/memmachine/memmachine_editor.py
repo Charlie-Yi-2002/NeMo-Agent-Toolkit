@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class MemMachineEditor(MemoryEditor):
     """
     Wrapper class that implements NAT interfaces for MemMachine Integrations.
-    Uses the MemMachine Python SDK (MemMachineClient) as documented at:
+    Uses the MemMachine Python SDK as documented at:
     https://github.com/MemMachine/MemMachine/blob/main/docs/examples/python.mdx
     
     Supports both episodic and semantic memory through the unified SDK interface.
@@ -37,11 +37,8 @@ class MemMachineEditor(MemoryEditor):
     User needs to add MemMachine SDK ids as metadata to the MemoryItem:
     - session_id
     - agent_id
-    - group_id
     - project_id
     - org_id
-
-    Group ID is optional. If not provided, the memory will be added to the 'default' group.
     """
 
     def __init__(self, memmachine_instance: Any):
@@ -64,7 +61,6 @@ class MemMachineEditor(MemoryEditor):
         user_id: str,
         session_id: str,
         agent_id: str,
-        group_id: str = "default",
         project_id: str | None = None,
         org_id: str | None = None
     ) -> Any:
@@ -75,7 +71,6 @@ class MemMachineEditor(MemoryEditor):
             user_id: User identifier
             session_id: Session identifier
             agent_id: Agent identifier
-            group_id: Group identifier (default: "default")
             project_id: Optional project identifier (default: "default-project")
             org_id: Optional organization identifier (default: "default-org")
             
@@ -120,8 +115,7 @@ class MemMachineEditor(MemoryEditor):
         return project.memory(
             user_id=user_id,
             agent_id=agent_id,
-            session_id=session_id,
-            group_id=group_id
+            session_id=session_id
         )
 
     async def add_items(self, items: list[MemoryItem]) -> None:
@@ -142,16 +136,15 @@ class MemMachineEditor(MemoryEditor):
             tags = memory_item.tags
             memory_text = memory_item.memory
 
-            # Extract session_id, agent_id, group_id, project_id, and org_id from metadata if present
+            # Extract session_id, agent_id, project_id, and org_id from metadata if present
             session_id = item_meta.pop("session_id", "default_session")
             agent_id = item_meta.pop("agent_id", "default_agent")
-            group_id = item_meta.pop("group_id", "default")
             project_id = item_meta.pop("project_id", None)
             org_id = item_meta.pop("org_id", None)
 
             # Get memory instance using MemMachine SDK
             memory = self._get_memory_instance(
-                user_id, session_id, agent_id, group_id, project_id, org_id
+                user_id, session_id, agent_id, project_id, org_id
             )
             
             # All memories are added to BOTH episodic and semantic memory types
@@ -177,11 +170,17 @@ class MemMachineEditor(MemoryEditor):
                         metadata["tags"] = ", ".join(tags) if isinstance(tags, list) else str(tags)
                     
                     # Capture variables in closure to avoid late binding issues
-                    def add_memory(content=msg_content, role=msg_role, mem_types=memory_types, meta=metadata):
+                    def add_memory(
+                        content=msg_content,
+                        role=msg_role,
+                        mem=memory,
+                        mem_types=memory_types,
+                        meta=metadata,
+                    ):
                         # Use MemMachine SDK add() method
                         # API: memory.add(content, role="user", metadata={}, memory_types=[...])
                         # episode_type should be None (defaults to "message") or EpisodeType.MESSAGE
-                        memory.add(
+                        mem.add(
                             content=content,
                             role=role,
                             metadata=meta if meta else None,
@@ -238,13 +237,12 @@ class MemMachineEditor(MemoryEditor):
         user_id = kwargs.pop("user_id")  # Ensure user ID is in keyword arguments
         session_id = kwargs.pop("session_id", "default_session")
         agent_id = kwargs.pop("agent_id", "default_agent")
-        group_id = kwargs.pop("group_id", "default")
         project_id = kwargs.pop("project_id", None)
         org_id = kwargs.pop("org_id", None)
 
         # Get memory instance using MemMachine SDK
         memory = self._get_memory_instance(
-            user_id, session_id, agent_id, group_id, project_id, org_id
+            user_id, session_id, agent_id, project_id, org_id
         )
 
         # Perform search using MemMachine SDK
@@ -325,7 +323,7 @@ class MemMachineEditor(MemoryEditor):
                 conv_episodes.sort(key=lambda e: e.get("created_at") or e.get("timestamp") or "")
             except (TypeError, AttributeError, ValueError) as e:
                 # Skip sorting if timestamps are missing or incompatible
-                logger.warning(
+                logger.exception(
                     f"Failed to sort episodes for conversation '{conv_key}': {e}. "
                     "Continuing without sorting."
                 )
@@ -463,7 +461,7 @@ class MemMachineEditor(MemoryEditor):
         Args:
             kwargs (dict): Keyword arguments to pass to the remove-items method.
                 Should include either 'memory_id' (episodic_id or semantic_id) or 'user_id'.
-                May include 'session_id', 'agent_id', 'group_id', 'project_id', 'org_id'.
+                May include 'session_id', 'agent_id', 'project_id', 'org_id'.
                 For memory_id deletion, may include 'memory_type' ('episodic' or 'semantic').
         """
         if "memory_id" in kwargs:
@@ -472,7 +470,6 @@ class MemMachineEditor(MemoryEditor):
             user_id = kwargs.pop("user_id", None)
             session_id = kwargs.pop("session_id", "default_session")
             agent_id = kwargs.pop("agent_id", "default_agent")
-            group_id = kwargs.pop("group_id", "default")
             project_id = kwargs.pop("project_id", None)
             org_id = kwargs.pop("org_id", None)
 
@@ -484,7 +481,7 @@ class MemMachineEditor(MemoryEditor):
 
             def delete_memory():
                 memory = self._get_memory_instance(
-                    user_id, session_id, agent_id, group_id, project_id, org_id
+                    user_id, session_id, agent_id, project_id, org_id
                 )
                 # Use MemMachine SDK to delete specific memory
                 # API: memory.delete_episodic(episodic_id) or memory.delete_semantic(semantic_id)
@@ -499,7 +496,6 @@ class MemMachineEditor(MemoryEditor):
             user_id = kwargs.pop("user_id")
             session_id = kwargs.pop("session_id", "default_session")
             agent_id = kwargs.pop("agent_id", "default_agent")
-            group_id = kwargs.pop("group_id", "default")
             project_id = kwargs.pop("project_id", None)
             org_id = kwargs.pop("org_id", None)
             # Note: delete_semantic_memory flag is not yet implemented for bulk deletion

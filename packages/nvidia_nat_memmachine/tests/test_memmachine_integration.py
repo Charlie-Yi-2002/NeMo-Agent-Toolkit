@@ -27,6 +27,7 @@ import os
 import uuid
 
 import pytest
+import requests
 
 from nat.builder.workflow_builder import WorkflowBuilder
 from nat.data_models.config import GeneralConfig
@@ -47,17 +48,10 @@ def memmachine_base_url_fixture(fail_missing: bool = False) -> str:
         base_url = f"http://{base_url}"
     
     try:
-        # Try to import and use MemMachineClient to check server availability
-        from memmachine import MemMachineClient
-        
-        client = MemMachineClient(base_url=base_url, timeout=5.0)
-        client.health_check(timeout=5.0)
+        # Check if server is available via health endpoint
+        response = requests.get(f"{base_url}/api/v2/health", timeout=5)
+        response.raise_for_status()
         return base_url
-    except ImportError:
-        reason = "memmachine package not installed. Install with: pip install memmachine"
-        if fail_missing:
-            raise RuntimeError(reason) from None
-        pytest.skip(reason=reason)
     except Exception:
         reason = f"Unable to connect to MemMachine server at {base_url}. Please ensure the server is running."
         if fail_missing:

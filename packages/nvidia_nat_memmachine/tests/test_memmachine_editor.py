@@ -128,8 +128,7 @@ async def test_add_items_with_conversation(
     mock_project.memory.assert_called_once_with(
         user_id="user123",
         agent_id="agent789",
-        session_id="session456",
-        group_id="default"
+        session_id="session456"
     )
     
     # Verify add was called for each message in conversation

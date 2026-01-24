@@ -47,7 +47,7 @@ class MemMachineMemoryClientConfig(MemoryBaseConfig, RetryMixin, name="memmachin
 @register_memory(config_type=MemMachineMemoryClientConfig)
 async def memmachine_memory_client(
     config: MemMachineMemoryClientConfig,
-    builder: Builder,  # Required by @register_memory contract, unused here
+    _builder: Builder,  # Required by @register_memory contract
 ) -> AsyncGenerator[MemoryEditor, None]:
     from .memmachine_editor import MemMachineEditor
     # Import and initialize the MemMachine Python SDK
@@ -55,9 +55,9 @@ async def memmachine_memory_client(
         from memmachine import MemMachineClient
     except ImportError as e:
         raise ImportError(
-            f"Could not import MemMachineClient from memmachine package. "
+            f"Could not import MemMachineClient from memmachine-server package. "
             f"Error: {e}. "
-            "Please ensure memmachine package is installed: pip install memmachine. "
+            "Please ensure memmachine-server package is installed: pip install memmachine-server. "
             "See https://github.com/MemMachine/MemMachine/blob/main/docs/examples/python.mdx "
             "for installation instructions."
         ) from e

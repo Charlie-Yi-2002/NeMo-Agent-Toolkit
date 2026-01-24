@@ -181,13 +181,11 @@ class TestAddItemsAPICalls:
         
         await editor_with_spy.add_items([item])
         
-        # Verify project.memory was called with correct parameters
         api_spy.assert_called_with(
             'project.memory',
             user_id="user123",
             session_id="session1",
-            agent_id="agent1",
-            group_id="default"
+            agent_id="agent1"
         )
         
         # Verify add was called twice (once per message)
@@ -202,14 +200,11 @@ class TestAddItemsAPICalls:
         assert user_call is not None, "Should have a call with role='user'"
         assert user_call['kwargs']['content'] == "I like pizza"
         assert user_call['kwargs']['role'] == "user"
-        # Now uses memory_types instead of episode_type
         assert user_call['kwargs']['episode_type'] is None
         assert 'memory_types' in user_call['kwargs']
         assert 'tags' in user_call['kwargs'].get('metadata', {})
-        # MemMachine SDK expects tags as comma-separated string
         assert user_call['kwargs']['metadata']['tags'] == "food, preference"
         
-        # Verify second call (assistant message)
         assistant_call = next(
             (c for c in add_calls if c['kwargs'].get('role') == 'assistant'),
             None
@@ -217,7 +212,6 @@ class TestAddItemsAPICalls:
         assert assistant_call is not None, "Should have a call with role='assistant'"
         assert assistant_call['kwargs']['content'] == "Great! What's your favorite topping?"
         assert assistant_call['kwargs']['role'] == "assistant"
-        # Now uses memory_types instead of episode_type
         assert assistant_call['kwargs']['episode_type'] is None
         assert 'memory_types' in assistant_call['kwargs']
     
@@ -240,17 +234,14 @@ class TestAddItemsAPICalls:
         
         await editor_with_spy.add_items([item])
         
-        # Verify add was called with both memory types
         add_calls = api_spy.get_calls('add')
         assert len(add_calls) == 1
         assert add_calls[0]['kwargs']['content'] == "User prefers working in the morning"
         assert add_calls[0]['kwargs']['role'] == "user"
         assert add_calls[0]['kwargs']['episode_type'] is None
-        # Verify memory_types contains both Episodic and Semantic
         memory_types = add_calls[0]['kwargs']['memory_types']
         assert len(memory_types) == 2, "Should have both episodic and semantic memory types"
         
-        # Verify metadata includes tags (as comma-separated string)
         assert add_calls[0]['kwargs']['metadata']['tags'] == "preference"
     
     async def test_add_conversation_memory_calls_add_with_both_types(
@@ -272,13 +263,11 @@ class TestAddItemsAPICalls:
         
         await editor_with_spy.add_items([item])
         
-        # Verify add was called with both memory types
         add_calls = api_spy.get_calls('add')
         assert len(add_calls) == 1
         assert add_calls[0]['kwargs']['content'] == "Hello"
         assert add_calls[0]['kwargs']['role'] == "user"
         assert add_calls[0]['kwargs']['episode_type'] is None
-        # Verify memory_types contains both Episodic and Semantic
         memory_types = add_calls[0]['kwargs']['memory_types']
         assert len(memory_types) == 2, "Should have both episodic and semantic memory types"
     
@@ -302,7 +291,6 @@ class TestAddItemsAPICalls:
         
         await editor_with_spy.add_items([item])
         
-        # Verify get_or_create_project was called with custom IDs
         api_spy.assert_called_with(
             'get_or_create_project',
             org_id="custom_org",
@@ -376,8 +364,7 @@ class TestSearchAPICalls:
             'project.memory',
             user_id="user123",
             session_id="session1",
-            agent_id="agent1",
-            group_id="default"
+            agent_id="agent1"
         )
         
         # Verify search was called with correct parameters
