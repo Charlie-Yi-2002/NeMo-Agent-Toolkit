@@ -198,7 +198,7 @@ async def test_add_and_retrieve():
                 
     except Exception as e:
         print(f"\n✗ Error: {e}")
-        logger.exception("Error during test execution")
+        logger.error("Error during test execution", exc_info=True)
         raise
 
 
