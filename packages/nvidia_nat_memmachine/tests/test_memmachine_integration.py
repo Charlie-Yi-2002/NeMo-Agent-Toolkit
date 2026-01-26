@@ -60,7 +60,7 @@ def memmachine_base_url_fixture(fail_missing: bool = False) -> str:
 
 
 @pytest.fixture(name="test_config")
-def test_config_fixture(memmachine_base_url: str):
+def test_config_fixture(memmachine_base_url: str) -> MemMachineMemoryClientConfig:
     """Create a test configuration."""
     # Use unique org/project IDs for each test run to avoid conflicts
     test_id = str(uuid.uuid4())[:8]
@@ -74,13 +74,14 @@ def test_config_fixture(memmachine_base_url: str):
 
 
 @pytest.fixture(name="test_user_id")
-def test_user_id_fixture():
+def test_user_id_fixture() -> str:
     """Generate a unique user ID for testing."""
     return f"test_user_{uuid.uuid4().hex[:8]}"
 
 
 @pytest.mark.integration
 @pytest.mark.slow
+@pytest.mark.asyncio
 async def test_add_and_retrieve_conversation_memory(
     test_config: MemMachineMemoryClientConfig,
     test_user_id: str
@@ -151,6 +152,7 @@ async def test_add_and_retrieve_conversation_memory(
 
 @pytest.mark.integration
 @pytest.mark.slow
+@pytest.mark.asyncio
 async def test_add_and_retrieve_direct_memory(
     test_config: MemMachineMemoryClientConfig,
     test_user_id: str
@@ -233,6 +235,7 @@ async def test_add_and_retrieve_direct_memory(
 
 @pytest.mark.integration
 @pytest.mark.slow
+@pytest.mark.asyncio
 async def test_add_multiple_and_retrieve_all(
     test_config: MemMachineMemoryClientConfig,
     test_user_id: str
@@ -290,6 +293,7 @@ async def test_add_multiple_and_retrieve_all(
 
 @pytest.mark.integration
 @pytest.mark.slow
+@pytest.mark.asyncio
 async def test_add_and_verify_conversation_content_match(
     test_config: MemMachineMemoryClientConfig,
     test_user_id: str
@@ -357,6 +361,7 @@ async def test_add_and_verify_conversation_content_match(
 
 @pytest.mark.integration
 @pytest.mark.slow
+@pytest.mark.asyncio
 async def test_conversation_and_direct_memory_both_retrievable(
     test_config: MemMachineMemoryClientConfig,
     test_user_id: str

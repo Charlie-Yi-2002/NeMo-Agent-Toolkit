@@ -28,17 +28,17 @@ logger = logging.getLogger(__name__)
 
 class MemMachineEditor(MemoryEditor):
     """
-    Wrapper class that implements NAT interfaces for MemMachine Integrations.
-    Uses the MemMachine Python SDK as documented at:
+    Wrapper class that implements `nat` interfaces for `MemMachine` integrations.
+    Uses the `MemMachine` Python SDK (`MemMachineClient`) as documented at:
     https://github.com/MemMachine/MemMachine/blob/main/docs/examples/python.mdx
     
     Supports both episodic and semantic memory through the unified SDK interface.
 
-    User needs to add MemMachine SDK ids as metadata to the MemoryItem:
-    - session_id
-    - agent_id
-    - project_id
-    - org_id
+    User needs to add `MemMachine` SDK ids as metadata to the MemoryItem:
+    - `session_id`
+    - `agent_id`
+    - `project_id`
+    - `org_id`
     """
 
     def __init__(self, memmachine_instance: Any):
