@@ -203,6 +203,7 @@ async def test_add_and_retrieve():
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_add_and_retrieve_integration():
     """Integration test for adding and retrieving memories."""
     await test_add_and_retrieve()
