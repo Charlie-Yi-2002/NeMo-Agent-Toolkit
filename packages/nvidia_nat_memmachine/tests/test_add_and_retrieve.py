@@ -35,6 +35,7 @@ import uuid
 from datetime import datetime
 
 import pytest
+import requests
 
 from nat.builder.builder import Builder
 from nat.memory.models import MemoryItem
@@ -43,12 +44,30 @@ from nat.plugins.memmachine.memory import MemMachineMemoryClientConfig
 logger = logging.getLogger(__name__)
 
 
+def _memmachine_available(base_url: str) -> bool:
+    """Return True if MemMachine server is reachable."""
+    if not base_url.startswith("http"):
+        base_url = f"http://{base_url}"
+    try:
+        response = requests.get(f"{base_url}/api/v2/health", timeout=5)
+        response.raise_for_status()
+        return True
+    except Exception:
+        return False
+
+
 async def test_add_and_retrieve():
-    """Test adding memories and retrieving them."""
+    """Test adding memories and retrieving them. Skips if MemMachine server is not running."""
     # Configuration
-    base_url = os.environ.get("MEMMACHINE_BASE_URL", "http://localhost:8080")
+    base_url = os.environ.get("MEMMACHINE_BASE_URL", "http://localhost:8095")
+    if not _memmachine_available(base_url):
+        pytest.skip(
+            f"MemMachine server not available at {base_url}. "
+            "Start the server or set MEMMACHINE_BASE_URL to run this test."
+        )
+
     test_id = str(uuid.uuid4())[:8]
-    
+
     config = MemMachineMemoryClientConfig(
         base_url=base_url,
         org_id=f"test_org_{test_id}",

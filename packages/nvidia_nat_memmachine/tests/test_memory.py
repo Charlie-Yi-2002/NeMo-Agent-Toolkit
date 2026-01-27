@@ -32,7 +32,7 @@ def mock_builder_fixture():
 def config_fixture():
     """Fixture to provide a MemMachineMemoryClientConfig instance."""
     return MemMachineMemoryClientConfig(
-        base_url="http://localhost:8080",
+        base_url="http://localhost:8095",
         org_id="test_org",
         project_id="test_project",
         timeout=30,
@@ -44,7 +44,7 @@ def config_fixture():
 def config_minimal_fixture():
     """Fixture to provide a minimal MemMachineMemoryClientConfig instance."""
     return MemMachineMemoryClientConfig(
-        base_url="http://localhost:8080"
+        base_url="http://localhost:8095"
     )
 
 
@@ -52,7 +52,7 @@ def config_minimal_fixture():
 def mock_memmachine_client_fixture():
     """Fixture to provide a mocked MemMachineClient."""
     mock_client = Mock()
-    mock_client.base_url = "http://localhost:8080"
+    mock_client.base_url = "http://localhost:8095"
     return mock_client
 
 
@@ -161,8 +161,8 @@ async def test_memmachine_memory_client_config_validation():
         MemMachineMemoryClientConfig()
     
     # Should work with base_url
-    config = MemMachineMemoryClientConfig(base_url="http://localhost:8080")
-    assert config.base_url == "http://localhost:8080"
+    config = MemMachineMemoryClientConfig(base_url="http://localhost:8095")
+    assert config.base_url == "http://localhost:8095"
     assert config.timeout == 30
     assert config.max_retries == 3
 

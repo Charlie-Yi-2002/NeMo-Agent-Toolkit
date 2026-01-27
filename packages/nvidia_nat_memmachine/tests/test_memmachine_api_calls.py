@@ -149,7 +149,7 @@ def spied_client_fixture(spied_project: Mock, api_spy: APICallSpy):
     
     mock_client.create_project = spied_create_project
     mock_client.get_or_create_project = spied_get_or_create_project
-    mock_client.base_url = "http://localhost:8080"
+    mock_client.base_url = "http://localhost:8095"
     return mock_client
 
 

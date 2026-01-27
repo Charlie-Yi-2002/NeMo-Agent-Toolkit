@@ -20,7 +20,7 @@ These tests require a running MemMachine server. They test the full
 integration by adding memories and then retrieving them.
 
 The tests will automatically skip if the MemMachine server is not available.
-Set `MEMMACHINE_BASE_URL` environment variable to override default (http://localhost:8080).
+Set `MEMMACHINE_BASE_URL` environment variable to override default (http://localhost:8095).
 """
 
 import os
@@ -41,9 +41,9 @@ def memmachine_base_url_fixture(fail_missing: bool = False) -> str:
     Ensure MemMachine server is running and provide base URL.
     
     To run these tests, a MemMachine server must be running.
-    Set MEMMACHINE_BASE_URL environment variable to override default (http://localhost:8080).
+    Set MEMMACHINE_BASE_URL environment variable to override default (http://localhost:8095).
     """
-    base_url = os.getenv("MEMMACHINE_BASE_URL", "http://localhost:8080")
+    base_url = os.getenv("MEMMACHINE_BASE_URL", "http://localhost:8095")
     if not base_url.startswith("http"):
         base_url = f"http://{base_url}"
     

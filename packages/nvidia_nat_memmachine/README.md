@@ -43,11 +43,11 @@ memmachine-configure
 
 The wizard will guide you through setting up:
 
-- **Neo4j Database**: Option to install Neo4j automatically or provide connection details for an existing instance
+- **Neo4j Database**: Option to install Neo4j automatically or provide connection details for an existing instance. If you enter nothing, Neo4j is installed on your local disk by default.
 - **Large Language Model (LLM) Provider**: Choose from supported providers like OpenAI, AWS Bedrock, or Ollama
-- **Model Selection**: Select specific LLM and embedding models
+- **Model Selection**: Select specific LLM and embedding models. The default is OpenAI with `gpt-4o-mini` and `text-embedding-3-small`.
 - **API Keys and Credentials**: Input necessary API keys for your selected LLM provider
-- **Server Settings**: Configure server host and port
+- **Server Settings**: Configure server host and port. The default is `localhost:8095`.
 
 **Note**: 
 - The wizard installs Neo4j and Java automatically when you choose to install Neo4j (platform-specific: Windows uses ZIP, macOS uses brew, Linux uses tar.gz)
@@ -62,7 +62,7 @@ After completing the configuration wizard, start the server:
 memmachine-server
 ```
 
-The server will start on `http://localhost:8080` by default (or the port you configured).
+The server will start on `http://localhost:8095` by default (or the port you configured).
 
 For more details, see the [MemMachine Configuration Wizard Documentation](https://docs.memmachine.ai/open_source/configuration-wizard).
 
@@ -73,7 +73,7 @@ Add MemMachine memory to your workflow configuration:
 ```yaml
 memory:
   memmachine_memory:
-    base_url: "http://localhost:8080"  # MemMachine server URL
+    base_url: "http://localhost:8095"  # MemMachine server URL
     org_id: "my_org"  # Optional: default organization ID
     project_id: "my_project"  # Optional: default project ID
 ```

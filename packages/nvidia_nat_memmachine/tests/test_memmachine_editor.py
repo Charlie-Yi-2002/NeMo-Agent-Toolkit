@@ -56,7 +56,7 @@ def mock_client_fixture(mock_project):
     mock_client = Mock(spec=['create_project', 'get_or_create_project', 'base_url'])
     mock_client.create_project = Mock(return_value=mock_project)
     mock_client.get_or_create_project = Mock(return_value=mock_project)
-    mock_client.base_url = "http://localhost:8080"
+    mock_client.base_url = "http://localhost:8095"
     return mock_client
 
 

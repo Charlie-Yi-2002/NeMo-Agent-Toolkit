@@ -37,7 +37,7 @@ class MemMachineMemoryClientConfig(MemoryBaseConfig, RetryMixin, name="memmachin
     LLM API keys (e.g., OpenAI) are configured in the MemMachine cfg.yml file,
     not in this client configuration.
     """
-    base_url: str  # Base URL of the MemMachine server (e.g., "http://localhost:8080")
+    base_url: str  # Base URL of the MemMachine server (e.g., "http://localhost:8095")
     org_id: str | None = None  # Optional default organization ID
     project_id: str | None = None  # Optional default project ID
     timeout: int = 30  # Request timeout in seconds
@@ -64,7 +64,7 @@ async def memmachine_memory_client(
 
     # Initialize MemMachineClient with base_url
     # This follows the documented SDK pattern for local instances:
-    # client = MemMachineClient(base_url="http://localhost:8080")
+    # client = MemMachineClient(base_url="http://localhost:8095")
     # Note: api_key is not needed for local/self-hosted MemMachine instances
     try:
         client = MemMachineClient(
